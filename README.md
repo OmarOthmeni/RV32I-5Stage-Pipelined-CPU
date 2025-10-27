@@ -1,14 +1,29 @@
-# RV32I-5Stage-Pipelined-CPU
-🚀 RV32I-A7: My First Pipelined RISC-V CPU Core🌟 Executive Summary: The Journey BeginsThis is my inaugural CPU design project! I am implementing a complete, synthesizable 32-bit RISC-V processor core from scratch. This project is a deep dive into the core principles of modern computer architecture, bringing a textbook classic—the 5-stage pipeline—to life on real hardware.The core is designed to successfully run the RV32I Base Integer Instruction Set on the Digilent Nexys A7-100T FPGA. The success of this project hinges on mastering the most challenging aspects of CPU design: pipeline hazard resolution.AspectDetailProject StatusActive DevelopmentTarget ISARISC-V RV32I (32-bit Base Integer Instruction Set)MicroarchitectureClassic 5-Stage Pipeline (IF, ID, EX, MEM, WB)Target HardwareDigilent Nexys A7-100T (Xilinx Artix-7)LanguageVerilog HDLKey ChallengeHazard Detection and Data Forwarding implementation.⚙️ Architecture and PipeliningThe CPU is a single-issue, in-order processor. Instructions flow through five stages, separated by clocked Pipeline Registers to achieve an ideal CPI (Cycles Per Instruction) of 1.1. The 5-Stage Pipeline FlowStageAbbreviationCore FunctionInstruction FetchIFFetches 32-bit instruction from Instruction Memory (IMEM) using the PC.Instruction DecodeIDDecodes the instruction, reads the Register File (x0-x31), and computes immediate values.ExecuteEXPerforms ALU operations, computes load/store addresses, and handles Forwarding logic.Memory AccessMEMExecutes Data Memory reads ($\text{LW}$) or writes ($\text{SW}$).Write BackWBWrites the final result back to the Register File.2. Hazard Management: The Heart of the DesignThis core includes sophisticated logic to prevent functional errors caused by overlapping instructions:Hazard TypeSolution ImplementedDetailData Hazard (RAW)Data Forwarding (Bypassing)Data is bypassed from the $\text{EX/MEM}$ or $\text{MEM/WB}$ register directly to the $\text{EX}$ stage input, avoiding most stalls.Load-Use HazardPipeline Stall (Bubble)The Hazard Detection Unit inserts one $\text{NOP}$ into the pipeline if a $\text{LW}$ instruction's result is needed in the very next cycle.Control HazardPipeline FlushConditional branches ($\text{BEQ, BLT}$) are resolved in the $\text{EX}$ stage, and the incorrectly fetched instructions are flushed/nullified immediately.📁 Repository StructureThe project is organized to separate the core logic from the board-specific constraints and simulation files..
+# RV32I-A7 — My First Pipelined RISC-V CPU Core
+
+![Project badge](https://img.shields.io/badge/status-active-brightgreen)  
+A synthesizable 32-bit RV32I CPU core implementing a classic 5-stage pipeline (IF, ID, EX, MEM, WB) with hazard detection and forwarding. Target FPGA: **Digilent Nexys A7-100T (Xilinx Artix-7)**.
+
+## 🚀 Executive Summary
+This is an educational, practical implementation of a RISC-V RV32I core aimed at demonstrating:
+- 5-stage pipeline (IF, ID, EX, MEM, WB)
+- Hazard Detection Unit (load-use stalling)
+- Forwarding / Bypassing from EX/MEM and MEM/WB to EX
+- Branch resolution in EX and pipeline flush on mispredict
+- Runs small RV32I test programs 
+
+## Repository layout
 ├── src/
-│   ├── cpu_core.v                # Top-level pipeline instantiation
-│   ├── modules/                  # ALU, Register File, Data/Instruction Memory
-│   └── pipeline_logic/           # Forwarding Unit, Hazard Detection, Pipeline Registers
+│ ├── cpu_core.v # Top-level pipeline instantiation (top module)
+│ ├── modules/ # ALU, register_file.v, imem.v, dmem.v, control unit
+│ └── pipeline_logic/ # forwarding.v, hazard_detection.v, pipeline_regs.v
 ├── asm_tests/
-│   ├── sample_fibonacci.s        # RISC-V source code
-│   └── mem_init.hex              # Machine code to load into IMEM
+│ ├── sample_fibonacci.s # RISC-V assembly test
+│ └── mem_init.hex # Hex init for IMEM (word-per-line 32-bit LE)
 ├── constraints/
-│   └── nexys_a7_rv32i.xdc        # Pin assignments, clock constraints for the FPGA
-└── testbench/
-    └── cpu_tb.v                  # Simulation testbench for functional verification
-🛠️ Build and VerificationPrerequisitesAMD Vivado Design Suite (Recommended version: 2020.2 or newer)RISC-V GNU Toolchain (For compiling custom assembly/C code)Nexys A7-100T Board FilesStep-by-Step ImplementationProject Setup: Create a new Vivado RTL project, targeting the Nexys A7-100T. Add all .v files from the src/ directory and link the .xdc file.Simulation: Run the cpu_tb.v testbench to confirm correct behavioral execution, focusing especially on the hazard scenarios.Synthesis and Implementation: Run the full flow in Vivado, ensuring the design passes the Static Timing Analysis dictated by the clock constraint in the $\text{.xdc}$ file.FPGA Deployment: Program the generated bitstream onto the Nexys A7-100T. Observe output on the on-board switches (input) and LEDs (output/status register monitoring).Next StepsIntegrate the $\text{M}$ Extension (Multiplication/Division).Add a simple I/O interface via the USB-UART bridge.
+│ └── nexys_a7_rv32i.xdc # Pin and clock constraints for Digilent Nexys A7
+├── testbench/
+│ └── cpu_tb.v # Icarus/Verilog/VVP functional testbench
+├── tools/
+│ └── bin2hex.py # Small helper to convert ELF/bin -> mem_init.hex
+├── Makefile # Convenience targets for sim/asm/synth
+└── README.md
