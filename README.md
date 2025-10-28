@@ -13,17 +13,31 @@ This is an educational, practical implementation of a RISC-V RV32I core aimed at
 
 ## Repository layout
 ├── src/
+
 │ ├── cpu_core.v # Top-level pipeline instantiation (top module)
+
 │ ├── modules/ # ALU, register_file.v, imem.v, dmem.v, control unit
+
 │ └── pipeline_logic/ # forwarding.v, hazard_detection.v, pipeline_regs.v
+
 ├── asm_tests/
+
 │ ├── sample_fibonacci.s # RISC-V assembly test
+
 │ └── mem_init.hex # Hex init for IMEM (word-per-line 32-bit LE)
+
 ├── constraints/
+
 │ └── nexys_a7_rv32i.xdc # Pin and clock constraints for Digilent Nexys A7
+
 ├── testbench/
+
 │ └── cpu_tb.v # Icarus/Verilog/VVP functional testbench
+
 ├── tools/
+
 │ └── bin2hex.py # Small helper to convert ELF/bin -> mem_init.hex
+
 ├── Makefile # Convenience targets for sim/asm/synth
+
 └── README.md
